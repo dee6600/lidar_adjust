@@ -1,13 +1,33 @@
 #!/bin/bash
 
 container_name="ros_master"
+command_executed=false
 
-# Check if the container is running
-if docker ps --format '{{.Names}}' | grep -q "$container_name"; then
-    echo "Container is running"
+while true; do
+    # Check if the ros_master container is running
+    if docker ps --format '{{.Names}}' | grep -q "$container_name"; then
+        echo "Container is running"
 
-    docker run -it --rm --entrypoint /path/to/myscript.sh my_image
+        # Check if the command has not been executed yet
+        if [ "$command_executed" = false ]; then
+            echo "Executing specified command"
 
-else
-    echo "Container is not running"
-fi
+            # Run the command you want when the container is running
+            docker run -it --rm --entrypoint inside.sh ros_master
+
+            # Set the flag to indicate that the command has been executed
+            command_executed=true
+        fi
+
+        # Sleep for a while before checking again (adjust the sleep duration as needed)
+        sleep 60
+    else
+        echo "Container is not running"
+
+        # Reset the flag when the container is not running
+        command_executed=false
+
+        # Sleep for a while before checking again (adjust the sleep duration as needed)
+        sleep 60
+    fi
+done
